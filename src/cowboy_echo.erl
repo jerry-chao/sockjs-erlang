@@ -1,5 +1,3 @@
-#!/usr/bin/env escript
-%%! -smp disable +A1 +K true -pa ebin -env ERL_LIBS deps -input
 -module(cowboy_echo).
 -mode(compile).
 
@@ -11,15 +9,8 @@
 
 main(_) ->
     Port = 8081,
-    ok = application:start(xmerl),
-    ok = application:start(sockjs),
-    ok = application:start(ranch),
-    ok = application:start(crypto),
-    ok = application:start(cowlib),
-    ok = application:start(cowboy),
-
     SockjsState = sockjs_handler:init_state(
-                    <<"/echo">>, fun service_echo/3, state, []),
+                    <<"/echo">>, fun service_echo/3, state, [{response_limit, 4096}]),
 
     VhostRoutes = [{<<"/echo/[...]">>, sockjs_cowboy_handler, SockjsState},
                    {'_', ?MODULE, []}],

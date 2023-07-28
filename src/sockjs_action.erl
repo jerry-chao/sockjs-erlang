@@ -99,7 +99,7 @@ xhr_streaming(Req, Headers, Service = #service{response_limit = ResponseLimit},
 -spec eventsource(req(), headers(), service(), session()) -> req().
 eventsource(Req, Headers, Service = #service{response_limit = ResponseLimit},
             SessionId) ->
-    Req1 = chunk_start(Req, Headers, "text/event-stream; charset=UTF-8"),
+    Req1 = chunk_start(Req, Headers, "text/event-stream"),
     Req2 = chunk(Req1, <<$\r, $\n>>),
     reply_loop(Req2, SessionId, ResponseLimit, fun fmt_eventsource/1, Service).
 

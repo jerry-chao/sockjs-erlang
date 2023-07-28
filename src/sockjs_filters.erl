@@ -33,16 +33,22 @@ h_sid(Req, Headers) ->
 
 -spec h_no_cache(req(), headers()) -> {headers(), req()}.
 h_no_cache(Req, Headers) ->
-    H = [{"Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"}],
+    H = [{"Cache-Control", "no-store, no-cache, no-transform, must-revalidate, max-age=0"}],
     {H ++ Headers, Req}.
 
 -spec xhr_cors(req(), headers()) -> {headers(), req()}.
 xhr_cors(Req, Headers) ->
     {OriginH, Req1} = sockjs_http:header('origin', Req),
-     Origin = case OriginH of
-                  "null"    -> "*";
-                  undefined -> "*";
-                  O         -> O
+     H = case OriginH of
+                  "null"    ->
+                    [{"Access-Control-Allow-Origin",      "*"},
+                    {"Access-Control-Allow-Credentials", "false"}];
+                  undefined ->
+                    [{"Access-Control-Allow-Origin",      "*"},
+                    {"Access-Control-Allow-Credentials", "false"}];
+                  O         ->
+                    [{"Access-Control-Allow-Origin",      O},
+                    {"Access-Control-Allow-Credentials", "true"}]
               end,
     {HeadersH, Req2} = sockjs_http:header(
                              'access-control-request-headers', Req1),
@@ -50,8 +56,6 @@ xhr_cors(Req, Headers) ->
                        undefined -> [];
                        V         -> [{"Access-Control-Allow-Headers", V}]
                    end,
-    H = [{"Access-Control-Allow-Origin",      Origin},
-         {"Access-Control-Allow-Credentials", "true"}],
     {H ++ AllowHeaders ++ Headers, Req2}.
 
 -spec xhr_options_post(req(), headers()) -> {headers(), req()}.
